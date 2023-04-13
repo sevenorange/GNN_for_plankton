@@ -1,3 +1,7 @@
+'''
+    
+
+'''
 import dgl
 import torch
 from torch._C import device
@@ -5,11 +9,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from dgl.data import MiniGCDataset
+from dgl.data import MiniGCDataset, QM7bDataset
 from dgl.nn.pytorch import GraphConv
 from sklearn.metrics import accuracy_score
  
- 
+'''
+    用于整图分类的GNN模块
+    2层GCN+1层平均池化+线性分类
+'''
 class Classifier(nn.Module):
     def __init__(self, in_dim, hidden_dim, n_classes):
         super(Classifier, self).__init__()
@@ -40,8 +47,15 @@ def collate(samples):
  
  
 # 创建训练集和测试集
-trainset = MiniGCDataset(2000, 100, 200)  # 生成2000个图，每个图的最小节点数>=10, 最大节点数<=20
-testset = MiniGCDataset(1000, 100, 200)
+trainset = MiniGCDataset(200, 100, 200)  # 生成2000个图，每个图的最小节点数>=10, 最大节点数<=20
+testset = MiniGCDataset(100, 100, 200)
+g_test, lab_test = trainset[100]
+print(g_test)
+print(lab_test)
+# qm7b = QM7bDataset()
+# print(len(qm7b))
+# print(qm7b.num_labels)
+# data_loader = DataLoader(qm7b, batch_size=8, shuffle=True, collate_fn=collate)
  
 # 用pytorch的DataLoader和之前定义的collect函数
 data_loader = DataLoader(trainset, batch_size=16, shuffle=True,
@@ -60,7 +74,7 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 # 模型训练
 model.train()
 epoch_losses = []
-for epoch in range(200):
+for epoch in range(100):
     epoch_loss = 0
     for iter, (batchg, label) in enumerate(data_loader):
         batchg, label = batchg.to(DEVICE), label.to(DEVICE)
