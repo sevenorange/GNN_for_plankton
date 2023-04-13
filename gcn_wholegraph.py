@@ -40,11 +40,11 @@ def collate(samples):
  
  
 # 创建训练集和测试集
-trainset = MiniGCDataset(2000, 10, 20)  # 生成2000个图，每个图的最小节点数>=10, 最大节点数<=20
-testset = MiniGCDataset(1000, 10, 20)
+trainset = MiniGCDataset(2000, 100, 200)  # 生成2000个图，每个图的最小节点数>=10, 最大节点数<=20
+testset = MiniGCDataset(1000, 100, 200)
  
 # 用pytorch的DataLoader和之前定义的collect函数
-data_loader = DataLoader(trainset, batch_size=64, shuffle=True,
+data_loader = DataLoader(trainset, batch_size=16, shuffle=True,
                          collate_fn=collate)
  
 DEVICE = torch.device("cuda:0")
@@ -60,7 +60,7 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 # 模型训练
 model.train()
 epoch_losses = []
-for epoch in range(100):
+for epoch in range(200):
     epoch_loss = 0
     for iter, (batchg, label) in enumerate(data_loader):
         batchg, label = batchg.to(DEVICE), label.to(DEVICE)
