@@ -17,30 +17,29 @@ from dgl.data.utils import save_graphs, load_graphs, load_labels
 # 将图像数据转换为图形数据
 """
         image--graph
-        规则分割
+        规则分割成4*4
+        特征: 对应区域的像素平均值
         输入: dataset读入的RGB图像
-        输出: 邻接矩阵(edge_index)和节点特征(features)的tensor
+        输出: dgl格式的graph
 """
 def image_to_graph(image):
     # 将图像转换为灰度图像，并转换为 NumPy 数组
-    # print('image格式:', image.dtype)
-    # image = image.cpu().numpy() 
-    # image = image[0]
     image = np.array(image)
-    # print('image维度', image.shape)
-    # image = image.permute(1, 2, 0)
-    # image = np.transpose(image,(1,2,0)) # 输入维度为CHW, 转换为HWC
     h, w, _ = image.shape
     gray_image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)    # 转换为灰度图像
-        
-    nodes_count = h * w     # 节点数量
-    nodes__ = np.zeros((h, w), dtype = np.int16)    # 
-    count = int(0)
-    for i, line in enumerate(gray_image):
-        for j, _ in enumerate(line):
-            nodes__[i][j] = count
-            count += 1
+    
+    nodes_count = 4 * 4     # 节点数量
     nodes_feature = np.array([0] * nodes_count, dtype = np.float32)    # 节点特征
+    node__ = array([arange(0, 4), arange(4, 8), arange(8, 12), arange(12, 16)])
+    lines = np.split(gray_image, 4, axis = 0)
+    count_all_node = 0
+    for part in lines:
+        point = np.split(part, 4, axis = 1)
+        for a in point:
+            a_feature = np.mean(a)
+            nodes_feature[count_all_node] = a_feature
+            count_all_node += 1
+    
     # print(len(nodes_feature))   # 节点数 1024
     edge_list = []  # 边列表
     for i, line in enumerate(nodes__):
@@ -89,34 +88,19 @@ test_data = torchvision.datasets.CIFAR10(root='./data', train=False,
 # 存储图数据集到本地
 save_path = './gnn_datasets/regular_grid/'
 count = 0
-# 单张图存储
-graphs = []
-labels = []
 for img, label in train_data:
     img_graph = image_to_graph(img)
-    graphs.append(img_graph)
-    labels.append(labels)
-    graph_label = {"class": label}
-    # img_save = save_path + 'train/' + 'train_graph_' + str(count) + '.bin'
-    # save_graphs(img_save, img_graph, graph_label)
+    graph_label = {"class": torch.tensor(label)}
+    img_save = save_path + 'train/' + 'train_graph_' + str(count) + '.bin'
+    save_graphs(img_save, img_graph, graph_label)
     count += 1
-img_save = save_path + 'train_graph_dgl.bin'
-save_graphs(img_save, graphs, {'labels', torch.tensor(labels)})
 count = 0
-graphs = []
-labels = []
 for img, label in test_data:
     img_graph = image_to_graph(img)
-    graphs.append(img_graph)
-    labels.append(label)
-    # graph_label = {"class": label}
-    # img_save = save_path + 'test/' + 'test_graph_' + str(count) + '.bin'
-    # save_graphs(img_save, img_graph, graph_label)
+    graph_label = {"class": torch.tensor(label)}
+    img_save = save_path + 'test/' + 'test_graph_' + str(count) + '.bin'
+    save_graphs(img_save, img_graph, graph_label)
     count += 1
-img_save = save_path + 'test_graph_dgl.bin'
-save_graphs(img_save, graphs, {'labels', torch.tensor(labels)})
-# 合并存储
-# image_graphs = []
 # test_case = train_data[0]
 # test_case_img, test_case_label = test_case
 # test_case_label = {"class": torch.tensor(test_case_label)}

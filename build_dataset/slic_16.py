@@ -17,7 +17,8 @@ from dgl.data.utils import save_graphs, load_graphs, load_labels
 # 将图像数据转换为图形数据
 """
         image--graph
-        规则分割
+        slic分割
+        特征: 平均像素特征
         输入: dataset读入的RGB图像
         输出: 邻接矩阵(edge_index)和节点特征(features)的tensor
 """
@@ -32,6 +33,14 @@ def image_to_graph(image):
     # image = np.transpose(image,(1,2,0)) # 输入维度为CHW, 转换为HWC
     h, w, _ = image.shape
     gray_image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)    # 转换为灰度图像
+
+    node__ = [i for i in range(0, 16)]
+    lines = np.split(gray_image, 4, axis = 0)
+    count_all_node = 0
+    for part in lines:
+        point = np.split(part, 4, axis = 1)
+        for a in point:
+
         
     nodes_count = h * w     # 节点数量
     nodes__ = np.zeros((h, w), dtype = np.int16)    # 
@@ -89,52 +98,16 @@ test_data = torchvision.datasets.CIFAR10(root='./data', train=False,
 # 存储图数据集到本地
 save_path = './gnn_datasets/regular_grid/'
 count = 0
-# 单张图存储
-graphs = []
-labels = []
 for img, label in train_data:
     img_graph = image_to_graph(img)
-    graphs.append(img_graph)
-    labels.append(labels)
-    graph_label = {"class": label}
-    # img_save = save_path + 'train/' + 'train_graph_' + str(count) + '.bin'
-    # save_graphs(img_save, img_graph, graph_label)
+    graph_label = {"class": torch.tensor(label)}
+    img_save = save_path + 'train/' + 'train_graph_' + str(count) + '.bin'
+    save_graphs(img_save, img_graph, graph_label)
     count += 1
-img_save = save_path + 'train_graph_dgl.bin'
-save_graphs(img_save, graphs, {'labels', torch.tensor(labels)})
 count = 0
-graphs = []
-labels = []
 for img, label in test_data:
     img_graph = image_to_graph(img)
-    graphs.append(img_graph)
-    labels.append(label)
-    # graph_label = {"class": label}
-    # img_save = save_path + 'test/' + 'test_graph_' + str(count) + '.bin'
-    # save_graphs(img_save, img_graph, graph_label)
+    graph_label = {"class": torch.tensor(label)}
+    img_save = save_path + 'test/' + 'test_graph_' + str(count) + '.bin'
+    save_graphs(img_save, img_graph, graph_label)
     count += 1
-img_save = save_path + 'test_graph_dgl.bin'
-save_graphs(img_save, graphs, {'labels', torch.tensor(labels)})
-# 合并存储
-# image_graphs = []
-# test_case = train_data[0]
-# test_case_img, test_case_label = test_case
-# test_case_label = {"class": torch.tensor(test_case_label)}
-# print(test_case_img)
-# test_case_graph = image_to_graph(test_case_img)
-# save_path = './gnn_datasets/test_case_0.bin'
-# save_graphs(save_path, test_case_graph, test_case_label)
-
-# g_list, label_dict = load_graphs(save_path, [0])
-# print(g_list)
-# print(label_dict)
-# print(label_dict['class'])
-# 批量转换为graph并存储到本地
-# graph_save_path = ''
-# train_graphs_path = graph_save_path + 'train_test.bin'
-# test_graphs_path = graph_save_path + 'test_t.bin'
-# for image, label in trainset:
-#     # image-->graph
-#     graph, lab = image2graph(image)
-# # 存储到本地
-# save_graphs(train_graphs_path, train_graphs, )
