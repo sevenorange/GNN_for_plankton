@@ -59,12 +59,17 @@ def image_to_graph(image):
 
     # 构造图
     G = nx.Graph()
+    # G.ndata['color'] = torch.tensor()
+    
     for i, j in enumerate(nodes_feature):
         G.add_node(i)
-        G.nodes[i]['color'] = j
+        # G.nodes[i]['color'] = j
+    
+
     G.add_edges_from(edge_list)
 
-    dgl_graph = dgl.from_networkx(G, node_attrs=['color'])
+    dgl_graph = dgl.from_networkx(G)
+    dgl_graph.ndata['color'] = torch.tensor(nodes_feature)
     # print(dgl_graph)
     return dgl_graph
     
@@ -90,31 +95,34 @@ test_data = torchvision.datasets.CIFAR10(root='./data', train=False,
 save_path = './gnn_datasets/regular_grid/'
 count = 0
 # 单张图存储
-graphs = []
-labels = []
+# graphs = []
+# labels = []
 for img, label in train_data:
     img_graph = image_to_graph(img)
-    graphs.append(img_graph)
-    labels.append(labels)
-    graph_label = {"class": label}
-    # img_save = save_path + 'train/' + 'train_graph_' + str(count) + '.bin'
-    # save_graphs(img_save, img_graph, graph_label)
+    # graphs.append(img_graph)
+    # labels.append(labels)
+    print(label)
+    graph_label = {"class": torch.tensor(label, dtype=torch.int16)}
+    print(graph_label)
+    img_save = save_path + 'train/' + 'train_graph_' + str(count) + '.bin'
+    save_graphs(img_save, img_graph, graph_label)
+    print(count)
     count += 1
-img_save = save_path + 'train_graph_dgl.bin'
-save_graphs(img_save, graphs, {'labels', torch.tensor(labels)})
+# img_save = save_path + 'train_graph_dgl.bin'
+# save_graphs(img_save, graphs, {'labels', torch.tensor(labels)})
 count = 0
-graphs = []
-labels = []
+# graphs = []
+# labels = []
 for img, label in test_data:
     img_graph = image_to_graph(img)
-    graphs.append(img_graph)
-    labels.append(label)
-    # graph_label = {"class": label}
-    # img_save = save_path + 'test/' + 'test_graph_' + str(count) + '.bin'
-    # save_graphs(img_save, img_graph, graph_label)
+    # graphs.append(img_graph)
+    # labels.append(label)
+    graph_label = {"class": torch.tensor(label, dtype=torch.int16)}
+    img_save = save_path + 'test/' + 'test_graph_' + str(count) + '.bin'
+    save_graphs(img_save, img_graph, graph_label)
     count += 1
-img_save = save_path + 'test_graph_dgl.bin'
-save_graphs(img_save, graphs, {'labels', torch.tensor(labels)})
+# img_save = save_path + 'test_graph_dgl.bin'
+# save_graphs(img_save, graphs, {'labels', torch.tensor(labels)})
 # 合并存储
 # image_graphs = []
 # test_case = train_data[0]
