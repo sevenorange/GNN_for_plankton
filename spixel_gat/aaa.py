@@ -66,7 +66,7 @@ class Classifier(nn.Module):
 model = GAT_MNIST(num_features=util.NUM_FEATURES, num_classes=util.NUM_CLASSES)
 print(model)
     
-opt = torch.optim.Adam(model.parameters())
+opt = torch.optim.Adam(model.parameters(), lr = 0.1)
 print(opt)
 # labels = []
 # for i in range(100):

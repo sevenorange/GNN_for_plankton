@@ -105,7 +105,7 @@ def train_model(
     if use_cuda:
         model = model.cuda()
     
-    opt = torch.optim.Adam(model.parameters())
+    opt = torch.optim.Adam(model.parameters(), lr = 0.1)
     
     best_valid_acc = 0.
     best_model = copy.deepcopy(model)
@@ -165,7 +165,7 @@ def main(
         dataset:bool=True,
         train:bool=True,
         test:bool=True,
-        epochs:int=100,
+        epochs:int=300,
         batch_size:int=128,
         use_cuda:bool=True,
         disable_tqdm:bool=False,
