@@ -97,13 +97,15 @@ count = 0
 # 单张图存储
 # graphs = []
 # labels = []
+# 存储训练集数据
 for img, label in train_data:
     img_graph = image_to_graph(img)
     # graphs.append(img_graph)
     # labels.append(labels)
-    print(label)
-    graph_label = {"class": torch.tensor(label, dtype=torch.int16)}
-    print(graph_label)
+    # print(label)
+    # graph_label = {"class": torch.tensor(label, dtype=torch.int16)}
+    graph_label = {"class": torch.tensor([label], dtype=torch.int16)}
+    # print(graph_label)
     img_save = save_path + 'train/' + 'train_graph_' + str(count) + '.bin'
     save_graphs(img_save, img_graph, graph_label)
     print(count)
@@ -117,10 +119,12 @@ for img, label in test_data:
     img_graph = image_to_graph(img)
     # graphs.append(img_graph)
     # labels.append(label)
-    graph_label = {"class": torch.tensor(label, dtype=torch.int16)}
+    # graph_label = {"class": torch.tensor(label, dtype=torch.int64)}
+    graph_label = {"class": torch.tensor([label], dtype=torch.int16)}
     img_save = save_path + 'test/' + 'test_graph_' + str(count) + '.bin'
     save_graphs(img_save, img_graph, graph_label)
     count += 1
+    # print(count, label)
 # img_save = save_path + 'test_graph_dgl.bin'
 # save_graphs(img_save, graphs, {'labels', torch.tensor(labels)})
 # 合并存储

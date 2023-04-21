@@ -27,10 +27,13 @@ def image_to_graph(image):
     image = np.array(image)
     h, w, _ = image.shape
     gray_image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)    # 转换为灰度图像
-    
+    # 数据标准化
+    result = np.zeros(image.shape, dtype=np.float32)
+    cv2.normalize(image, result, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
     nodes_count = 4 * 4     # 节点数量
     nodes_feature = np.array([0] * nodes_count, dtype = np.float32)    # 节点特征
-    node__ = array([arange(0, 4), arange(4, 8), arange(8, 12), arange(12, 16)])
+    # node__ = np.array([arange(0, 4), arange(4, 8), arange(8, 12), arange(12, 16)])
+    nodes__ = np.arange(16).reshape(4, 4)
     lines = np.split(gray_image, 4, axis = 0)
     count_all_node = 0
     for part in lines:
@@ -39,7 +42,7 @@ def image_to_graph(image):
             a_feature = np.mean(a)
             nodes_feature[count_all_node] = a_feature
             count_all_node += 1
-    
+    h, w = (4, 4)
     # print(len(nodes_feature))   # 节点数 1024
     edge_list = []  # 边列表
     for i, line in enumerate(nodes__):
@@ -69,13 +72,23 @@ def image_to_graph(image):
     # print(dgl_graph)
     return dgl_graph
     
+# class MyDataset(torch.utils.data.Dataset):
+#     def __init__(self):
+#         pass
+    
+#     def __getitem__(self, index):
+#         pass
+    
+#     def __len__(self):
+#         pass
 
 # 加载图像数据集Crustacea
 # dataset_path = './Crustacea/'
 # train_dir = dataset_path + 'train/'
 # test_dir = dataset_path + 'test/'
 transform = transforms.Compose([
-    transforms.RandomResizedCrop(size=32),
+    # transforms.RandomResizedCrop(size=32),
+    transforms.Resize([32, 32]),
     transforms.RandomHorizontalFlip(),
 ])
 
@@ -88,20 +101,24 @@ train_data = torchvision.datasets.CIFAR10(root='./data', train=True,
 test_data = torchvision.datasets.CIFAR10(root='./data', train=False,
                                        download=False, transform=transform)
 # 存储图数据集到本地
-save_path = './gnn_datasets/regular_grid/'
+save_path = './gnn_datasets/regular_16/'
 count = 0
 for img, label in train_data:
     img_graph = image_to_graph(img)
-    graph_label = {"class": torch.tensor(label)}
+    # graph_label = {"class": torch.tensor(label)}
+    graph_label = {"class": torch.tensor([label], dtype=torch.int16)}
     img_save = save_path + 'train/' + 'train_graph_' + str(count) + '.bin'
     save_graphs(img_save, img_graph, graph_label)
+    print(count, label)
     count += 1
 count = 0
 for img, label in test_data:
     img_graph = image_to_graph(img)
-    graph_label = {"class": torch.tensor(label)}
+    # graph_label = {"class": torch.tensor(label)}
+    graph_label = {"class": torch.tensor([label], dtype=torch.int16)}
     img_save = save_path + 'test/' + 'test_graph_' + str(count) + '.bin'
     save_graphs(img_save, img_graph, graph_label)
+    print(count, label)
     count += 1
 # test_case = train_data[0]
 # test_case_img, test_case_label = test_case
